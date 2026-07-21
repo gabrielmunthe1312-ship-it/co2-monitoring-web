@@ -3,37 +3,61 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CO₂ Board</title>
+  <title>CO₂ Board - Monitoring Basement</title>
   <link rel="stylesheet" href="style.css" />
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Chart.js & Zoom Plugin -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
+  <!-- Supabase JS Client SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <aside class="sidebar">
-    <h2>CO₂ Board</h2>
+    <h2>💨 CO₂ Board</h2>
     <nav>
       <ul>
-        <li><button onclick="showSection('dashboard')">Dashboard</button></li>
-        <li><button onclick="showSection('historis')">Data Historis</button></li>
+        <li><button id="btnNavDashboard" class="active" onclick="showSection('dashboard')">📊 Dashboard</button></li>
+        <li><button id="btnNavHistoris" onclick="showSection('historis')">📜 Data Historis</button></li>
       </ul>
     </nav>
   </aside>
 
   <main>
+    <!-- Section Dashboard -->
     <section id="dashboard" class="content-section active">
-      <h1>Monitoring CO₂ Basement</h1>
-      <p>09/02/2026, 01.08.22 | Koneksi: Dummy Mode</p>
-      <p>Nilai CO₂ Saat Ini: <strong id="latestValue">2000 ppm</strong></p>
-      <p>Status udara: <span class="status tinggi" id="statusLabel">Berbahaya</span></p>
-      <h2>Grafik Kadar CO₂</h2>
+      <div>
+        <h1>Monitoring CO₂ Basement</h1>
+        <p class="meta-info" id="connectionInfo">Memuat koneksi...</p>
+      </div>
 
-      <div class="time-filter">
-        <label for="startTime">Dari:</label>
-        <input type="datetime-local" id="startTime" />
-        <label for="endTime">Sampai:</label>
-        <input type="datetime-local" id="endTime" />
-        <button onclick="applyTimeFilter()" class="btn">Terapkan</button>
-        <button onclick="resetGraph()" class="btn">Kembali ke Awal</button>
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <span class="label">Kadar CO₂ Saat Ini</span>
+          <span class="value" id="latestValue">- ppm</span>
+        </div>
+        <div class="metric-card">
+          <span class="label">Status Kualitas Udara</span>
+          <div style="margin-top: 0.25rem;">
+            <span class="status aman" id="statusLabel">Memuat...</span>
+          </div>
+        </div>
+      </div>
+
+      <h2>Grafik Realtime Kadar CO₂</h2>
+
+      <div class="filter-card">
+        <div class="time-filter">
+          <label for="startTime">Dari:</label>
+          <input type="datetime-local" id="startTime" />
+          <label for="endTime">Sampai:</label>
+          <input type="datetime-local" id="endTime" />
+          <button onclick="applyTimeFilter()" class="btn">Terapkan Filter</button>
+          <button onclick="resetGraph()" class="btn btn-secondary">Reset Grafik</button>
+        </div>
       </div>
 
       <div class="chart-container">
@@ -41,26 +65,45 @@
       </div>
     </section>
 
+    <!-- Section Data Historis -->
     <section id="historis" class="content-section">
-      <h2>Data Historis</h2>
-      <table>
-        <thead>
-          <tr><th>Waktu</th><th>CO₂ (ppm)</th></tr>
-        </thead>
-        <tbody id="dataTable"></tbody>
-      </table>
-      <form id="filterForm">
-        <label for="startDate">Dari:</label>
-        <input type="date" id="startDate" required />
-        <label for="endDate">Sampai:</label>
-        <input type="date" id="endDate" required />
-        <button type="submit" class="btn">Tampilkan</button>
-      </form>
-      <button id="downloadBtn" class="btn">Download CSV</button>
+      <div>
+        <h1>Data Historis CO₂</h1>
+        <p class="meta-info">Riwayat pengamatan kadar karbon dioksida di basement</p>
+      </div>
+
+      <div class="filter-card">
+        <form id="filterForm">
+          <label for="startDate">Dari Tanggal:</label>
+          <input type="date" id="startDate" required />
+          <label for="endDate">Sampai Tanggal:</label>
+          <input type="date" id="endDate" required />
+          <button type="submit" class="btn">Tampilkan Data</button>
+          <button type="button" onclick="resetTableFilter()" class="btn btn-secondary">Reset Filter</button>
+        </form>
+      </div>
+
+      <div class="table-actions">
+        <span>Menampilkan <strong id="tableRowCount">0</strong> entri data</span>
+        <button id="downloadBtn" class="btn">📥 Download CSV</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Waktu</th>
+              <th>Kadar CO₂ (ppm)</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="dataTable"></tbody>
+        </table>
+      </div>
     </section>
   </main>
 
-  <script src="firebase-config.js"></script>
+  <script src="supabase-config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
